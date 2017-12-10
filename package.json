@@ -1,0 +1,56 @@
+{
+  "name": "redux-connect-component",
+  "version": "1.0",
+  "description": "Declarative Connect Component for Redux.",
+  "main": "lib/index.js",
+  "jsnext:main": "es/index.js",
+  "files": ["lib", "es", "src", "dist"],
+  "scripts": {
+    "clean": "rimraf lib dist es",
+    "build":
+      "npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run build:es",
+    "prepublish": "npm run clean && npm run test && npm run build",
+    "posttest": "npm run lint",
+    "lint": "eslint src test",
+    "test":
+      "cross-env BABEL_ENV=commonjs mocha --compilers js:babel-core/register --reporter spec test/*.js",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
+    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es",
+    "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack",
+    "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/datchley/redux-connect-component.git"
+  },
+  "homepage": "https://github.com/datchley/redux-connect-component",
+  "keywords": ["react", "redux", "thunk"],
+  "author": "David Atchley <david.m.atchley@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-core": "^6.6.5",
+    "babel-eslint": "7",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.6.5",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "chai": "^4.1.2",
+    "cross-env": "^5.1.1",
+    "eslint": "^4.13.0",
+    "eslint-config-airbnb": "16.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.5.1",
+    "mocha": "^4.0.1",
+    "redux": "^3.4.0",
+    "rimraf": "^2.5.2",
+    "webpack": "^3.10.0"
+  },
+  "dependencies": {
+    "prop-types": "^15.6.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  }
+}
