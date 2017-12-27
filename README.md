@@ -147,8 +147,8 @@ const Counter = ({ value, onChange }) => (
 const App = () => (
   <Provider store={store}>
     <Connect selector={getCount} actions={{ changeCount }}>{
-      ({ state, dispatch, actions }) => (
-        <Counter value={state.count} onChange={actions.changeCount}>
+      (state, { changeCount }) => (
+        <Counter value={state.count} onChange={changeCount}>
       )}
     </Connect>
   </Provider>
@@ -198,9 +198,9 @@ ReactDOM.render(
   <Provider store={store}>{
     <h1>Users</h1>
     <Connect selector={getUsers}>{
-      ({ state }) => state.map(user, () => (
+      (state, dispatch) => state.map(user, () => (
         <Connect selector={profileSelector(user.id)}>
-        {({ state:{ friends, foods } }) =>
+        {({ friends, foods }, dispatch) =>
           <Profile user={user} friends={friends} foods={foods} />
         }
         </Connect>
