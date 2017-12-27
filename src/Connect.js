@@ -1,7 +1,8 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import isPlainObject from 'lodash/isPlainObject';
+
 import shallowEqual from './utils/shallowEqual';
-import combineSelectors from './utils/combineSelectors';
 import bindActionCreators from './utils/bindActionCreators';
 
 class Connect extends Component {
@@ -13,28 +14,28 @@ class Connect extends Component {
   componentWillMount() {
     const { store } = this.context;
     const { selector } = this.props;
-    this.unbsubscribe = store.subscribe(this.selectState);
-
     if (selector) {
+      // only subscribe to store if they're specified a selector
+      this.unsubscribe = store.subscribe(this.selectState);
       this.selectState(this.props);
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    if (!shallowEqual(nextProps, this.props)) {
+    if (nextProps.selector && !shallowEqual(nextProps, this.props)) {
       this.selectState(nextProps);
     }
   }
 
   componentWillUnmount() {
-    this.unsubscribe && this.unsubscribe();
+    const { selector } = this.props;
+    this.unsubscribe && selector && this.unsubscribe();
   }
 
   selectState = ({ selector } = this.props) => {
     const { store } = this.context;
     const state = store.getState();
-    const select = typeof selector === 'function' ? selector : combineSelectors(selector);
-    const slice = select(state);
+    const slice = selector(state);
 
     if (!shallowEqual(slice, this.state.slice)) {
       this.setState({ slice });
@@ -42,27 +43,39 @@ class Connect extends Component {
   };
 
   render() {
-    const { actions } = this.props;
+    const { selector, actions } = this.props;
     const { store } = this.context;
     const { slice } = this.state;
+    const args = [];
 
-    const handlers = actions ? bindActionCreators(actions, store.dispatch) : null;
+    if (selector) {
+      // state should be first arg if subscribed
+      args.push(slice);
+    }
 
-    return this.props.children({
-      state: slice,
-      dispatch: store.dispatch,
-      ...(handlers || {}),
-    });
+    if (actions) {
+      const handlers = isPlainObject(actions)
+        ? bindActionCreators(actions, store.dispatch)
+        : actions(store.dispatch);
+
+      // next we either pass bound actions or dispatch directly
+      args.push(handlers);
+    } else {
+      args.push(store.dispatch.bind(store));
+    }
+
+    return this.props.children(...args);
   }
 }
 
 Connect.propTypes = {
-  selector: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
+  selector: PropTypes.func,
   actions: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   children: PropTypes.func.isRequired,
 };
 
 Connect.defaultProps = {
+  selector: null,
   actions: null,
 };
 
